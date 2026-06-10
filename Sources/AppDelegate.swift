@@ -192,15 +192,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return item
     }
 
+    /// A clickable menu-row view that opens a URL without the standard blue menu
+    /// highlight — just a pointer cursor on hover, so the version signature reads
+    /// like the link in the Settings footer rather than a normal menu command.
+    private final class ClickableMenuRowView: NSView {
+        var onClick: (() -> Void)?
+        // Route every click in the row to this view (not the inner label).
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            bounds.contains(convert(point, from: superview)) ? self : nil
+        }
+        override func mouseUp(with event: NSEvent) { onClick?() }
+        override func resetCursorRects() { addCursorRect(bounds, cursor: .pointingHand) }
+    }
+
     /// A tiny, washed-out version signature for the foot of the menu —
-    /// right-aligned, non-highlighting, just `v1.1.1` (the full branch@commit
-    /// provenance lives in the Settings window footer).
+    /// right-aligned, just `v1.1.1`, clickable to the running build on GitHub
+    /// (the full branch@commit provenance lives in the Settings window footer).
     private func versionItem() -> NSMenuItem {
         let item = NSMenuItem()
-        item.isEnabled = false
+        item.isEnabled = true
 
-        let container = NSView()
+        let container = ClickableMenuRowView()
         container.translatesAutoresizingMaskIntoConstraints = false
+        container.onClick = { [weak container] in
+            NSWorkspace.shared.open(BuildInfo.current.url)
+            container?.enclosingMenuItem?.menu?.cancelTracking()
+        }
 
         let label = NSTextField(labelWithString: "v\(BuildInfo.current.version)")
         label.font = .systemFont(ofSize: 9)

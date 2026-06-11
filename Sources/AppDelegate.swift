@@ -423,7 +423,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             window.titleVisibility = .hidden
             window.titlebarAppearsTransparent = true
             window.isReleasedWhenClosed = false
-            window.contentViewController = NSHostingController(rootView: DashboardView(model: dashboardModel))
+            window.contentViewController = NSHostingController(
+                rootView: DashboardView(model: dashboardModel, usage: usageService, history: HistoryStore.shared))
             window.addTitlebarAccessoryViewController(titleAccessory("Dashboard"))
             window.addTitlebarAccessoryViewController(closeAccessory(for: window))
             window.setFrameAutosaveName("ClaudeGlanceDashboard")
